@@ -1,21 +1,19 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
+import 'scanner_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   Future<void> _scanCode(BuildContext context, bool isQR) async {
-    String code = await FlutterBarcodeScanner.scanBarcode(
-      '#ff6666', // Line color
-      'Cancel', // Cancel button text
-      true, // Show flash icon
-      isQR ? ScanMode.QR : ScanMode.BARCODE,
+    final String? code = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ScannerScreen()),
     );
-    if (code != '-1') { // -1 means scan cancelled
+    if (code != null && code.isNotEmpty) {
       await context.read<ProductProvider>().fetchProduct(code);
       Navigator.push(
         context,

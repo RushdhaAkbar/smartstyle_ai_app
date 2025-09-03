@@ -1,0 +1,2 @@
+- [x] Delete build/ directory to clear Flutter build cache
+- [x] Delete android/build/ directory to clear Android Gradle build cache
