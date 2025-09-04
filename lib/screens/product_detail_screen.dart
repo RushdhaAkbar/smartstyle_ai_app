@@ -1,11 +1,13 @@
-
+// lib/screens/product_detail_screen.dart (updated)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
 import 'recommendations_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  const ProductDetailScreen({super.key});
+  final bool isExchange; // New parameter to control exchange button visibility
+
+  const ProductDetailScreen({super.key, this.isExchange = false});
 
   @override
   Widget build(BuildContext context) {
@@ -24,18 +26,17 @@ class ProductDetailScreen extends StatelessWidget {
             Text('Stock: ${product.stock}'),
             Text('Availability: ${product.availability ? 'In Stock' : 'Out of Stock'}'),
             Text(product.description),
-            ElevatedButton(
-              onPressed: () async {
-                if (product.id != null) {
-                  await context.read<ProductProvider>().fetchRecommendations(product.id!);
+            if (isExchange) // Show exchange button only if in exchange mode
+              ElevatedButton(
+                onPressed: () async {
+                  await context.read<ProductProvider>().fetchRecommendations(product.id);
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const RecommendationsScreen()),
                   );
-                }
-              },
-              child: const Text('Exchange/Alternatives'),
-            ),
+                },
+                child: const Text('Exchange/Alternatives'),
+              ),
           ],
         ),
       ),

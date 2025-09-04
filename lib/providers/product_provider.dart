@@ -1,4 +1,4 @@
-// lib/providers/product_provider.dart (updated)
+// lib/providers/product_provider.dart (updated for budget combinations)
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
@@ -10,42 +10,55 @@ class ProductProvider with ChangeNotifier {
   final List<Product> _sampleProducts = [
     Product(
       id: "1",
-      name: "Blue T-Shirt",
+      name: "Blue Skirt",
       sizes: ["M", "L"],
       colors: ["Blue"],
-      price: 19.99,
+      price: 400.0,
       stock: 50,
       availability: true,
-      description: "Comfortable blue cotton t-shirt",
-      image: "https://example.com/blue-tshirt.jpg",
-      qrCode: "QR-BLUE-TSHIRT-1693746000000",
+      description: "Comfortable blue skirt",
+      image: "https://example.com/blue-skirt.jpg",
+      qrCode: "QR-BLUE-SKIRT-1693746000000",
       barcode: "1693746000000123",
     ),
     Product(
       id: "2",
-      name: "Red T-Shirt",
+      name: "Red Skirt",
       sizes: ["S", "M"],
       colors: ["Red"],
-      price: 18.99,
+      price: 500.0,
       stock: 30,
       availability: true,
-      description: "Vibrant red cotton t-shirt",
-      image: "https://example.com/red-tshirt.jpg",
-      qrCode: "QR-RED-TSHIRT-1693746000001",
+      description: "Vibrant red skirt",
+      image: "https://example.com/red-skirt.jpg",
+      qrCode: "QR-RED-SKIRT-1693746000001",
       barcode: "1693746000000456",
     ),
     Product(
       id: "3",
-      name: "Green Hoodie",
+      name: "Green Blouse",
       sizes: ["L", "XL"],
       colors: ["Green"],
-      price: 29.99,
+      price: 200.0,
       stock: 20,
-      availability: false,
-      description: "Warm green hoodie",
-      image: "https://example.com/green-hoodie.jpg",
-      qrCode: "QR-GREEN-HOODIE-1693746000002",
+      availability: true,
+      description: "Elegant green blouse",
+      image: "https://example.com/green-blouse.jpg",
+      qrCode: "QR-GREEN-BLOUSE-1693746000002",
       barcode: "1693746000000789",
+    ),
+    Product(
+      id: "4",
+      name: "Yellow Blouse",
+      sizes: ["M", "L"],
+      colors: ["Yellow"],
+      price: 800.0,
+      stock: 15,
+      availability: true,
+      description: "Bright yellow blouse",
+      image: "https://example.com/yellow-blouse.jpg",
+      qrCode: "QR-YELLOW-BLOUSE-1693746000003",
+      barcode: "1693746000000111",
     ),
   ];
 
@@ -59,24 +72,9 @@ class ProductProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _currentProduct = _sampleProducts.firstWhere((p) => p.id == id, orElse: () => Product(
-        id: '',
-        name: '',
-        sizes: [],
-        colors: [],
-        price: 0.0,
-        stock: 0,
-        availability: false,
-        description: '',
-        image: '',
-        qrCode: '',
-        barcode: '',
-      ));
-      if (_currentProduct!.id == '') {
-        _currentProduct = null;
-      }
+      _currentProduct = _sampleProducts.firstWhere((p) => p.id == id);
     } catch (e) {
-      print('Error fetching product: \$e');
+      print('Error fetching product: $e');
       _currentProduct = null;
     }
     _isLoading = false;
@@ -87,31 +85,41 @@ class ProductProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      // Mock AI recommendation based on current product ID
-      final currentProduct = _sampleProducts.firstWhere((p) => p.id == id, orElse: () => Product(
-        id: '',
-        name: '',
-        sizes: [],
-        colors: [],
-        price: 0.0,
-        stock: 0,
-        availability: false,
-        description: '',
-        image: '',
-        qrCode: '',
-        barcode: '',
-      ));
-      if (currentProduct.id == '') {
+      final currentProduct = _sampleProducts.firstWhere((p) => p.id == id);
+      if (currentProduct == null) {
         _recommendations = [];
         return;
       }
       _recommendations = _sampleProducts.where((p) {
         return p.id != id && // Exclude current product
-               p.price >= currentProduct.price - 5 && p.price <= currentProduct.price + 5 && // Similar price range
+               p.price >= currentProduct.price - 5 &&
+               p.price <= currentProduct.price + 5 &&
                p.availability; // Only available products
       }).toList();
+      print('Exchange Recommendations: ${_recommendations.map((p) => p.name).join(', ')}');
     } catch (e) {
-      print('Error fetching recommendations: \$e');
+      print('Error fetching exchange recommendations: $e');
+      _recommendations = [];
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> fetchBudgetRecommendations(double budget, String type) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final types = type.toLowerCase().split(' and '); // Split types if multiple (e.g., 'skirt and blouse')
+      _recommendations = [];
+      for (var t in types) {
+        final matches = _sampleProducts.where((p) {
+          return p.name.toLowerCase().contains(t.trim()) && p.price <= budget && p.availability;
+        }).toList();
+        _recommendations.addAll(matches);
+      }
+      print('Budget Recommendations: ${_recommendations.map((p) => p.name).join(', ')}');
+    } catch (e) {
+      print('Error fetching budget recommendations: $e');
       _recommendations = [];
     }
     _isLoading = false;
