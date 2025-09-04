@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/product_provider.dart';
 import 'screens/login_screen.dart';
-
+//import 'screens/registration_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
         title: 'SmartStyle AI',
         theme: ThemeData(primarySwatch: Colors.blue),
         home: LoginScreen(),
+        //home:RegistrationScreen()
       ),
     );
   }
