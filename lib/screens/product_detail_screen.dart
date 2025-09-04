@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
+import 'recommendations_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   const ProductDetailScreen({super.key});
@@ -22,10 +24,18 @@ class ProductDetailScreen extends StatelessWidget {
             Text('Stock: ${product.stock}'),
             Text('Availability: ${product.availability ? 'In Stock' : 'Out of Stock'}'),
             Text(product.description),
-            ElevatedButton(onPressed: () async {
-              await context.read<ProductProvider>().fetchRecommendations('similar to ${product.name}');
-              // Navigate to exchange/recommendations
-            }, child: const Text('Exchange/Alternatives')),
+            ElevatedButton(
+              onPressed: () async {
+                if (product.id != null) {
+                  await context.read<ProductProvider>().fetchRecommendations(product.id!);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RecommendationsScreen()),
+                  );
+                }
+              },
+              child: const Text('Exchange/Alternatives'),
+            ),
           ],
         ),
       ),
