@@ -1,6 +1,7 @@
 // lib/screens/home_screen.dart (updated)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smartstyle_ai_app/screens/budget_screen.dart';
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
 import 'scanner_screen.dart';
@@ -53,6 +54,13 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => _scanOrEnterCode(context, _idController.text),
               child: const Text('Use ID'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
+              },
+              child: const Text('Go to Budget Recommendations'),
             ),
           ],
         ),

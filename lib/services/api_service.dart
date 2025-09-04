@@ -55,4 +55,59 @@ class ApiService implements ApiRepository {
       throw UnimplementedError('Real AI call not implemented yet');
     }
   }
+
+  Future<List<Product>> fetchProducts() async {
+    if (_useMock) {
+      // Sample mock list of products
+      return [
+        Product(
+          id: "1",
+          name: "Blue T-Shirt",
+          sizes: ["M", "L"],
+          colors: ["Blue"],
+          price: 19.99,
+          stock: 50,
+          availability: true,
+          description: "Comfortable casual blue cotton t-shirt",
+          image: "https://example.com/blue-tshirt.jpg",
+          qrCode: "QR-BLUE-TSHIRT-1693746000000",
+          barcode: "1693746000000123",
+        ),
+        Product(
+          id: "2",
+          name: "Red T-Shirt",
+          sizes: ["S", "M"],
+          colors: ["Red"],
+          price: 18.99,
+          stock: 30,
+          availability: true,
+          description: "Vibrant casual red cotton t-shirt",
+          image: "https://example.com/red-tshirt.jpg",
+          qrCode: "QR-RED-TSHIRT-1693746000001",
+          barcode: "1693746000000456",
+        ),
+        Product(
+          id: "3",
+          name: "Green Hoodie",
+          sizes: ["L", "XL"],
+          colors: ["Green"],
+          price: 29.99,
+          stock: 20,
+          availability: false,
+          description: "Warm green hoodie",
+          image: "https://example.com/green-hoodie.jpg",
+          qrCode: "QR-GREEN-HOODIE-1693746000002",
+          barcode: "1693746000000789",
+        ),
+      ];
+    } else {
+      final response = await http.get(Uri.parse('${Constants.baseUrl}/products'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Product.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load products');
+      }
+    }
+  }
 }
