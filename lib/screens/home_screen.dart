@@ -1,26 +1,41 @@
-// lib/screens/home_screen.dart (updated)
+// lib/screens/home_screen.dart (updated with Exchange button)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smartstyle_ai_app/screens/budget_screen.dart';
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
-import 'scanner_screen.dart';
+import 'budget_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  Future<void> _scanOrEnterCode(BuildContext context, String? code) async {
-    final String effectiveCode = code ?? await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ScannerScreen()),
+  Future<void> _startExchange(BuildContext context) async {
+    final TextEditingController _idController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Product ID for Exchange'),
+        content: TextField(
+          controller: _idController,
+          decoration: const InputDecoration(labelText: 'Product ID'),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () async {
+              final id = _idController.text;
+              if (id.isNotEmpty) {
+                await context.read<ProductProvider>().fetchProduct(id);
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProductDetailScreen(isExchange: true)),
+                );
+              }
+            },
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
     );
-    if (effectiveCode != null && effectiveCode.isNotEmpty) {
-      await context.read<ProductProvider>().fetchProduct(effectiveCode);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ProductDetailScreen()),
-      );
-    }
   }
 
   @override
@@ -34,8 +49,12 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () => _scanOrEnterCode(context, null), // Trigger scanner
-              child: const Text('Scan QR/Barcode'),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen())),
+              child: const Text('Custom Budget'),
+            ),
+            ElevatedButton(
+              onPressed: () => _startExchange(context),
+              child: const Text('Exchange'),
             ),
             const SizedBox(height: 20),
             Padding(
@@ -43,24 +62,32 @@ class HomeScreen extends StatelessWidget {
               child: TextField(
                 controller: _idController,
                 decoration: const InputDecoration(
-                  labelText: 'Enter Product ID (e.g., 1, 2, 3)',
+                  labelText: 'Enter Product ID (Fallback)',
                   border: OutlineInputBorder(),
                 ),
                 onSubmitted: (id) async {
-                  await _scanOrEnterCode(context, id);
+                  if (id.isNotEmpty) {
+                    await context.read<ProductProvider>().fetchProduct(id);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProductDetailScreen()),
+                    );
+                  }
                 },
               ),
             ),
             ElevatedButton(
-              onPressed: () => _scanOrEnterCode(context, _idController.text),
-              child: const Text('Use ID'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
+              onPressed: () async {
+                final id = _idController.text;
+                if (id.isNotEmpty) {
+                  await context.read<ProductProvider>().fetchProduct(id);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProductDetailScreen()),
+                  );
+                }
               },
-              child: const Text('Go to Budget Recommendations'),
+              child: const Text('Get Product Details'),
             ),
           ],
         ),

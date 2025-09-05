@@ -1,10 +1,9 @@
-// lib/screens/recommendations_screen.dart (enhanced for budget combinations)
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/product.dart';
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
-
+import '../models/product.dart';
 class RecommendationsScreen extends StatefulWidget {
   final bool isFromBudget; // Flag to indicate if from BudgetScreen
 
@@ -75,7 +74,16 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                   },
                   title: Text(product.name),
                   subtitle: Text('\$${product.price.toStringAsFixed(2)} - Stock: ${product.stock}'),
-                  secondary: Image.network(product.image, width: 50, height: 50, fit: BoxFit.cover, errorBuilder: (context, error, stack) => const Icon(Icons.error)),
+                  secondary: GestureDetector(
+                    onTap: () {
+                      context.read<ProductProvider>().fetchProduct(product.id);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ProductDetailScreen(isExchange: false)),
+                      );
+                    },
+                    child: Image.network(product.image, width: 50, height: 50, fit: BoxFit.cover, errorBuilder: (context, error, stack) => const Icon(Icons.error)),
+                  ),
                 );
               }).toList(),
             );
