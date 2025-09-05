@@ -86,10 +86,6 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
     try {
       final currentProduct = _sampleProducts.firstWhere((p) => p.id == id);
-      if (currentProduct == null) {
-        _recommendations = [];
-        return;
-      }
       _recommendations = _sampleProducts.where((p) {
         return p.id != id && // Exclude current product
                p.price >= currentProduct.price - 5 &&

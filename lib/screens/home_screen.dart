@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (_) => const ScannerScreen()),
     );
-    if (effectiveCode != null && effectiveCode.isNotEmpty) {
+    if (effectiveCode.isNotEmpty) {
       await context.read<ProductProvider>().fetchProduct(effectiveCode);
       Navigator.push(
         context,
@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _idController = TextEditingController();
+    final TextEditingController idController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(title: const Text('SmartStyle AI Home')),
@@ -41,7 +41,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40.0),
               child: TextField(
-                controller: _idController,
+                controller: idController,
                 decoration: const InputDecoration(
                   labelText: 'Enter Product ID (e.g., 1, 2, 3)',
                   border: OutlineInputBorder(),
@@ -52,7 +52,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () => _scanOrEnterCode(context, _idController.text),
+              onPressed: () => _scanOrEnterCode(context, idController.text),
               child: const Text('Use ID'),
             ),
             const SizedBox(height: 20),
