@@ -1,4 +1,4 @@
-// lib/providers/product_provider.dart (updated for budget combinations)
+
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
@@ -10,6 +10,45 @@ class ProductProvider with ChangeNotifier {
   final List<Product> _sampleProducts = [
     Product(
       id: "1",
+      name: "Blue T-Shirt",
+      sizes: ["M", "L"],
+      colors: ["Blue"],
+      price: 19.99,
+      stock: 50,
+      availability: true,
+      description: "Comfortable blue cotton t-shirt",
+      image: "https://example.com/blue-tshirt.jpg",
+      qrCode: "QR-BLUE-TSHIRT-1693746000000",
+      barcode: "1693746000000123",
+    ),
+    Product(
+      id: "2",
+      name: "Red T-Shirt",
+      sizes: ["S", "M"],
+      colors: ["Red"],
+      price: 18.99,
+      stock: 30,
+      availability: true,
+      description: "Vibrant red cotton t-shirt",
+      image: "https://example.com/red-tshirt.jpg",
+      qrCode: "QR-RED-TSHIRT-1693746000001",
+      barcode: "1693746000000456",
+    ),
+    Product(
+      id: "3",
+      name: "Green Hoodie",
+      sizes: ["L", "XL"],
+      colors: ["Green"],
+      price: 29.99,
+      stock: 20,
+      availability: false,
+      description: "Warm green hoodie",
+      image: "https://example.com/green-hoodie.jpg",
+      qrCode: "QR-GREEN-HOODIE-1693746000002",
+      barcode: "1693746000000789",
+    ),
+    Product(
+      id: "4",
       name: "Blue Skirt",
       sizes: ["M", "L"],
       colors: ["Blue"],
@@ -18,11 +57,11 @@ class ProductProvider with ChangeNotifier {
       availability: true,
       description: "Comfortable blue skirt",
       image: "https://example.com/blue-skirt.jpg",
-      qrCode: "QR-BLUE-SKIRT-1693746000000",
-      barcode: "1693746000000123",
+      qrCode: "QR-BLUE-SKIRT-1693746000003",
+      barcode: "1693746000000111",
     ),
     Product(
-      id: "2",
+      id: "5",
       name: "Red Skirt",
       sizes: ["S", "M"],
       colors: ["Red"],
@@ -31,11 +70,11 @@ class ProductProvider with ChangeNotifier {
       availability: true,
       description: "Vibrant red skirt",
       image: "https://example.com/red-skirt.jpg",
-      qrCode: "QR-RED-SKIRT-1693746000001",
-      barcode: "1693746000000456",
+      qrCode: "QR-RED-SKIRT-1693746000004",
+      barcode: "1693746000000222",
     ),
     Product(
-      id: "3",
+      id: "6",
       name: "Green Blouse",
       sizes: ["L", "XL"],
       colors: ["Green"],
@@ -44,11 +83,11 @@ class ProductProvider with ChangeNotifier {
       availability: true,
       description: "Elegant green blouse",
       image: "https://example.com/green-blouse.jpg",
-      qrCode: "QR-GREEN-BLOUSE-1693746000002",
-      barcode: "1693746000000789",
+      qrCode: "QR-GREEN-BLOUSE-1693746000005",
+      barcode: "1693746000000333",
     ),
     Product(
-      id: "4",
+      id: "7",
       name: "Yellow Blouse",
       sizes: ["M", "L"],
       colors: ["Yellow"],
@@ -57,8 +96,8 @@ class ProductProvider with ChangeNotifier {
       availability: true,
       description: "Bright yellow blouse",
       image: "https://example.com/yellow-blouse.jpg",
-      qrCode: "QR-YELLOW-BLOUSE-1693746000003",
-      barcode: "1693746000000111",
+      qrCode: "QR-YELLOW-BLOUSE-1693746000006",
+      barcode: "1693746000000444",
     ),
   ];
 
