@@ -1,113 +1,83 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
 import '../models/product.dart';
 import '../utils/constants.dart';
 
-abstract class ApiRepository {
-  Future<Product> getProductById(String id);
-  Future<List<Product>> getRecommendations(String query);
-}
+class ApiService {
+  final String baseUrl = Constants.baseUrl;
 
-class ApiService implements ApiRepository {
-  static final ApiService _instance = ApiService._internal();
-  factory ApiService() => _instance;
-  ApiService._internal();
+  Future<List<Product>> getProducts() async {
+    final response = await http.get(Uri.parse('$baseUrl/products'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Product.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products: ${response.statusCode}');
+    }
+  }
 
-  final bool _useMock = true; // Set to false later for real backend
-
-  @override
   Future<Product> getProductById(String id) async {
-    if (_useMock) {
-      // Sample mock data
-      return Product.fromJson({
-        '_id': id,
-        'name': 'Test Shirt',
-        'sizes': ['S', 'M'],
-        'colors': ['Green', 'Yellow'],
-        'price': 19.99,
-        'stock': 100,
-        'availability': true,
-        'description': 'Test description',
-        'image': 'https://test.com/image.png',
-        'qrCode': 'QR-TEST-789',
-        'barcode': 'BAR-012345',
-      });
+    final response = await http.get(Uri.parse('$baseUrl/products/$id'));
+    if (response.statusCode == 200) {
+      return Product.fromJson(json.decode(response.body));
     } else {
-      final response = await http.get(Uri.parse('${Constants.baseUrl}/products/$id'));
-      if (response.statusCode == 200) {
-        return Product.fromJson(jsonDecode(response.body));
-      } else {
-        throw Exception('Failed to load product');
-      }
+      throw Exception('Failed to load product: ${response.statusCode}');
     }
   }
 
-  @override
-  Future<List<Product>> getRecommendations(String query) async {
-    if (_useMock) {
-      // Sample mock list
-      return [
-        Product.fromJson({'name': 'Recommended Item 1', 'price': 15.0 /* ... other fields */}),
-        Product.fromJson({'name': 'Recommended Item 2', 'price': 25.0 /* ... */}),
-      ];
+  Future<Product> getProductByCode(String code) async {
+    final encodedCode = Uri.encodeComponent(code);
+    final response = await http.get(Uri.parse('$baseUrl/products?code=$encodedCode')).timeout(const Duration(seconds: 10));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is List) {
+        return Product.fromJson(data[0]);
+      } else {
+        return Product.fromJson(data);
+      }
     } else {
-      // Real AI call with sample prompt "recommend similar to t-shirt under $30"
-      throw UnimplementedError('Real AI call not implemented yet');
+      throw Exception('Failed to load product by code: ${response.statusCode}');
     }
   }
 
-  Future<List<Product>> fetchProducts() async {
-    if (_useMock) {
-      // Sample mock list of products
-      return [
-        Product(
-          id: "1",
-          name: "Blue T-Shirt",
-          sizes: ["M", "L"],
-          colors: ["Blue"],
-          price: 19.99,
-          stock: 50,
-          availability: true,
-          description: "Comfortable casual blue cotton t-shirt",
-          image: "https://example.com/blue-tshirt.jpg",
-          qrCode: "QR-BLUE-TSHIRT-1693746000000",
-          barcode: "1693746000000123",
-        ),
-        Product(
-          id: "2",
-          name: "Red T-Shirt",
-          sizes: ["S", "M"],
-          colors: ["Red"],
-          price: 18.99,
-          stock: 30,
-          availability: true,
-          description: "Vibrant casual red cotton t-shirt",
-          image: "https://example.com/red-tshirt.jpg",
-          qrCode: "QR-RED-TSHIRT-1693746000001",
-          barcode: "1693746000000456",
-        ),
-        Product(
-          id: "3",
-          name: "Green Hoodie",
-          sizes: ["L", "XL"],
-          colors: ["Green"],
-          price: 29.99,
-          stock: 20,
-          availability: false,
-          description: "Warm green hoodie",
-          image: "https://example.com/green-hoodie.jpg",
-          qrCode: "QR-GREEN-HOODIE-1693746000002",
-          barcode: "1693746000000789",
-        ),
-      ];
+  Future<List<Product>> getRecommendations(String id) async {
+    // Fetch recommendations from backend or use Grok API for AI; here assuming backend endpoint
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/$id/recommendations'),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Product.fromJson(json)).toList();
     } else {
-      final response = await http.get(Uri.parse('${Constants.baseUrl}/products'));
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Product.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load products');
-      }
+      throw Exception('Failed to load recommendations: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Product>> getBudgetRecommendations(
+    double budget,
+    String types,
+  ) async {
+    // Assuming backend endpoint for budget search
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/budget?budget=$budget&types=$types'),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Product.fromJson(json)).toList();
+    } else {
+      throw Exception(
+        'Failed to load budget recommendations: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<bool> testImageUrl(String imageUrl) async {
+    try {
+      final response = await http.head(Uri.parse(imageUrl));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 }
