@@ -1,2 +1,3 @@
-- [x] Delete build/ directory to clear Flutter build cache
-- [x] Delete android/build/ directory to clear Android Gradle build cache
+- Remove 2 print statements from lib/services/api_service.dart
+- Remove 4 print statements from lib/screens/product_detail_screen.dart
+- Remove 7 print statements from lib/providers/product_provider.dart

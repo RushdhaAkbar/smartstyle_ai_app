@@ -1,4 +1,4 @@
 class Constants {
-  static const String baseUrl = 'http://localhost:8000/api'; 
-  static const String xAiApiKey = 'your_sample_xai_key_abc123'; 
+  static const String baseUrl = 'http://192.168.8.144:8000/api';
+
 }
