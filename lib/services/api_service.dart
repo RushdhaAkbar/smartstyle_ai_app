@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/product.dart';
+
 import '../utils/constants.dart';
 
 class ApiService {
@@ -31,44 +32,30 @@ class ApiService {
     final response = await http.get(Uri.parse('$baseUrl/products?code=$encodedCode')).timeout(const Duration(seconds: 10));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      if (data is List) {
+      if (data.isNotEmpty) {
         return Product.fromJson(data[0]);
-      } else {
-        return Product.fromJson(data);
       }
+      throw Exception('Product not found');
     } else {
       throw Exception('Failed to load product by code: ${response.statusCode}');
     }
   }
 
-  Future<List<Product>> getRecommendations(String id) async {
-    // Fetch recommendations from backend or use Grok API for AI; here assuming backend endpoint
-    final response = await http.get(
-      Uri.parse('$baseUrl/products/$id/recommendations'),
-    );
+  Future<Map<String, dynamic>> getRecommendations(String id) async {
+    final response = await http.get(Uri.parse('$baseUrl/products/$id/recommendations'));
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Product.fromJson(json)).toList();
+      return json.decode(response.body);
     } else {
       throw Exception('Failed to load recommendations: ${response.statusCode}');
     }
   }
 
-  Future<List<Product>> getBudgetRecommendations(
-    double budget,
-    String types,
-  ) async {
-    // Assuming backend endpoint for budget search
-    final response = await http.get(
-      Uri.parse('$baseUrl/products/budget?budget=$budget&types=$types'),
-    );
+  Future<Map<String, dynamic>> getBudgetRecommendations(double budget, String types) async {
+    final response = await http.get(Uri.parse('$baseUrl/products/budget?budget=$budget&types=$types'));
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Product.fromJson(json)).toList();
+      return json.decode(response.body);
     } else {
-      throw Exception(
-        'Failed to load budget recommendations: ${response.statusCode}',
-      );
+      throw Exception('Failed to load budget recommendations: ${response.statusCode}');
     }
   }
 

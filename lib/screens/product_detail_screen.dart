@@ -1,88 +1,12 @@
-// lib/screens/product_detail_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import '../providers/product_provider.dart';
 import 'recommendations_screen.dart';
-
-class Base64Image extends StatelessWidget {
-  final String base64String;
-  final BoxFit fit;
-  final double? width;
-  final double? height;
-
-  const Base64Image({
-    super.key,
-    required this.base64String,
-    this.fit = BoxFit.cover,
-    this.width,
-    this.height,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    try {
-      // Extract the base64 data from the data URL
-      final String base64Data = base64String.split(',').last;
-      if (base64Data.length > 50000) { // If base64 is too long, show placeholder to avoid memory issues
-        return Container(
-          color: Colors.grey[200],
-          child: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image, size: 50, color: Colors.grey),
-                SizedBox(height: 8),
-                Text('Image too large', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
-          ),
-        );
-      }
-      final Uint8List bytes = base64Decode(base64Data);
-
-      return Image.memory(
-        bytes,
-        fit: fit,
-        width: width,
-        height: height,
-        errorBuilder: (context, error, stack) {
-          return Container(
-            color: Colors.grey[200],
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                  SizedBox(height: 8),
-                  Text('Image not available', style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      return Container(
-        color: Colors.grey[200],
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.broken_image, size: 50, color: Colors.grey),
-              SizedBox(height: 8),
-              Text('Image not available', style: TextStyle(color: Colors.grey)),
-            ],
-          ),
-        ),
-      );
-    }
-  }
-}
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final bool isExchange;
@@ -94,7 +18,10 @@ class ProductDetailScreen extends StatelessWidget {
     final provider = context.watch<ProductProvider>();
     final product = provider.currentProduct;
 
+    print('Building ProductDetailScreen, isLoading: ${provider.isLoading}, product: ${product?.name ?? 'null'}');
+
     if (provider.isLoading) {
+      print('Showing loading spinner');
       return const Scaffold(
         body: Center(child: SpinKitWave(color: Colors.blueAccent, size: 50.0)),
       );
@@ -140,34 +67,31 @@ class ProductDetailScreen extends StatelessWidget {
                           return Builder(
                             builder: (BuildContext context) {
                               Widget imageWidget;
-                              if (variant.image.startsWith('data:image')) {
-                                imageWidget = Base64Image(base64String: variant.image);
-                              } else {
-                                imageWidget = Image.network(
-                                  variant.image,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stack) {
-                                    return Container(
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                                            SizedBox(height: 8),
-                                            Text('Image not available', style: TextStyle(color: Colors.grey)),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
+                              try {
+                                if (variant.image.startsWith('data:image')) {
+                                  final base64String = variant.image.split(',').last;
+                                  final bytes = base64Decode(base64String);
+                                  imageWidget = Image.memory(
+                                    bytes,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) => const Icon(Icons.error, size: 50),
+                                  );
+                                } else if (variant.image.contains(RegExp(r'^[A-Za-z0-9+/=]+$'))) {
+                                  final bytes = base64Decode(variant.image);
+                                  imageWidget = Image.memory(
+                                    bytes,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) => const Icon(Icons.error, size: 50),
+                                  );
+                                } else {
+                                  imageWidget = Image.network(
+                                    variant.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) => const Icon(Icons.error, size: 50),
+                                  );
+                                }
+                              } catch (e) {
+                                imageWidget = const Icon(Icons.error, size: 50);
                               }
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
@@ -177,18 +101,41 @@ class ProductDetailScreen extends StatelessWidget {
                           );
                         }).toList()
                       : [
-                          Container(
-                            color: Colors.grey[200],
-                            child: const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text('No images available', style: TextStyle(color: Colors.grey)),
-                                ],
-                              ),
-                            ),
+                          Builder(
+                            builder: (BuildContext context) {
+                              final placeholderUrl = 'https://example.com/placeholder.jpg';
+                              Widget imageWidget;
+                              try {
+                                if (placeholderUrl.startsWith('data:image')) {
+                                  final base64String = placeholderUrl.split(',').last;
+                                  final bytes = base64Decode(base64String);
+                                  imageWidget = Image.memory(
+                                    bytes,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) => const Icon(Icons.error, size: 50),
+                                  );
+                                } else if (placeholderUrl.contains(RegExp(r'^[A-Za-z0-9+/=]+$'))) {
+                                  final bytes = base64Decode(placeholderUrl);
+                                  imageWidget = Image.memory(
+                                    bytes,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) => const Icon(Icons.error, size: 50),
+                                  );
+                                } else {
+                                  imageWidget = Image.network(
+                                    placeholderUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) => const Icon(Icons.error, size: 50),
+                                  );
+                                }
+                              } catch (e) {
+                                imageWidget = const Icon(Icons.error, size: 50);
+                              }
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: imageWidget,
+                              );
+                            },
                           ),
                         ],
                 ),
@@ -219,10 +166,12 @@ class ProductDetailScreen extends StatelessWidget {
                       ),
                       onPressed: () async {
                         await context.read<ProductProvider>().fetchRecommendations(product.id);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const RecommendationsScreen()),
-                        );
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const RecommendationsScreen()),
+                          );
+                        }
                       },
                     ),
                   ),

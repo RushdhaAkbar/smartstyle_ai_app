@@ -4,17 +4,18 @@ import 'dart:convert';
 import '../models/product.dart';
 import '../services/api_service.dart';
 
-import '../utils/constants.dart';
 
 class ProductProvider with ChangeNotifier {
   Product? _currentProduct;
   List<Product> _recommendations = [];
+  String _aiSuggestions = ''; // Store AI text suggestions
   List<Product> _products = []; // Cache all products
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
 
   Product? get currentProduct => _currentProduct;
   List<Product> get recommendations => _recommendations;
+  String get aiSuggestions => _aiSuggestions;
   bool get isLoading => _isLoading;
 
   Future<void> fetchAllProducts() async {
@@ -23,6 +24,7 @@ class ProductProvider with ChangeNotifier {
     try {
       _products = await _apiService.getProducts();
     } catch (e) {
+      print('Error fetching all products: $e');
     }
     _isLoading = false;
     notifyListeners();
@@ -34,6 +36,7 @@ class ProductProvider with ChangeNotifier {
     try {
       _currentProduct = await _apiService.getProductById(id);
     } catch (e) {
+      print('Error fetching product: $e');
       _currentProduct = null;
     }
     _isLoading = false;
@@ -46,6 +49,7 @@ class ProductProvider with ChangeNotifier {
     try {
       _currentProduct = await _apiService.getProductByCode(code);
     } catch (e) {
+      print('Error fetching product by code: $e');
       _currentProduct = null;
     }
     _isLoading = false;
@@ -56,11 +60,13 @@ class ProductProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _recommendations = await _apiService.getRecommendations(id);
-      // Optional: Use Grok API for AI enhancement
-      // await _fetchGrokRecommendations(id);
+      final response = await _apiService.getRecommendations(id);
+      _recommendations = (response['dbRecommendations'] as List).map((json) => Product.fromJson(json)).toList();
+      _aiSuggestions = response['aiSuggestions'] ?? 'No AI suggestions available';
     } catch (e) {
+      print('Error fetching recommendations: $e');
       _recommendations = [];
+      _aiSuggestions = '';
     }
     _isLoading = false;
     notifyListeners();
@@ -70,40 +76,15 @@ class ProductProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _recommendations = await _apiService.getBudgetRecommendations(budget, type);
+      final response = await _apiService.getBudgetRecommendations(budget, type);
+      _recommendations = (response['dbRecommendations'] as List).map((json) => Product.fromJson(json)).toList();
+      _aiSuggestions = response['aiSuggestions'] ?? 'No AI suggestions available';
     } catch (e) {
+      print('Error fetching budget recommendations: $e');
       _recommendations = [];
+      _aiSuggestions = '';
     }
     _isLoading = false;
     notifyListeners();
-  }
-
-  // Optional: Integrate Grok API for AI recommendations (e.g., for advanced suggestions)
-  Future<void> _fetchGrokRecommendations(String id) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://api.x.ai/v1/chat/completions'), // Grok API endpoint
-        headers: {
-          'Authorization': 'Bearer ${Constants.xAiApiKey}',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'model': 'grok-4',
-          'messages': [
-            {'role': 'system', 'content': 'You are a helpful product recommendation assistant.'},
-            {'role': 'user', 'content': 'Recommend products similar to product ID $id from our inventory.'},
-          ],
-        }),
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final suggestions = data['choices'][0]['message']['content'];
-        // Parse suggestions to update _recommendations (e.g., match to _products)
-        // Logic to map suggestions to products
-      } else {
-        throw Exception('Grok API error: ${response.statusCode}');
-      }
-    } catch (e) {
-    }
   }
 }
