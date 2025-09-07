@@ -1,4 +1,4 @@
-// lib/models/product.dart
+
 class Variant {
   final String color;
   final String image;
