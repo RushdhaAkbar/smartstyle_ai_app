@@ -30,11 +30,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final provider = context.watch<ProductProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Custom Recommendations', style: GoogleFonts.roboto(fontSize: 24, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
+        title: Text('Custom Recommendations', style: GoogleFonts.roboto(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: const Color(0xFF2C3E50), // Professional dark blue-grey
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: provider.isLoading
-          ? const Center(child: SpinKitWave(color: Colors.blueAccent, size: 50.0))
+          ? const Center(child: SpinKitWave(color: Color(0xFF4CAF50), size: 50.0))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Card(
@@ -61,21 +63,24 @@ class _BudgetScreenState extends State<BudgetScreen> {
                       ),
                       const SizedBox(height: 16),
                       TypeAheadField(
-                        textFieldConfiguration: TextFieldConfiguration(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            labelText: 'Search Dress Types',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            prefixIcon: const Icon(Icons.search),
-                          ),
-                        ),
+                        builder: (context, controller, focusNode) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Search Dress Types',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              prefixIcon: const Icon(Icons.search),
+                            ),
+                          );
+                        },
                         suggestionsCallback: (pattern) async {
                           return allTypes.where((type) => type.toLowerCase().contains(pattern.toLowerCase())).toList();
                         },
                         itemBuilder: (context, suggestion) {
                           return ListTile(title: Text(suggestion, style: GoogleFonts.roboto()));
                         },
-                        onSuggestionSelected: (suggestion) {
+                        onSelected: (suggestion) {
                           setState(() {
                             if (!selectedTypes.contains(suggestion)) {
                               selectedTypes.add(suggestion);
@@ -97,7 +102,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                 selectedTypes.remove(type);
                               });
                             },
-                            backgroundColor: Colors.blueAccent.withOpacity(0.1),
+                            backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           );
                         }).toList(),
@@ -115,7 +120,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            backgroundColor: Colors.blueAccent,
+                            backgroundColor: const Color(0xFF4CAF50), // Green color instead of dark blue
                           ),
                           onPressed: () async {
                             setState(() => _errorMessage = '');

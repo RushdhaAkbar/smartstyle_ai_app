@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
 import 'budget_screen.dart';
+import 'recommendations_screen.dart';
 import 'scanner_screen.dart';
+import 'package:image_picker/image_picker.dart'; // Add for image capture
+import 'dart:io';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -66,6 +69,21 @@ class HomeScreen extends StatelessWidget {
     _startScan(context, isExchange: true);
   }
 
+  // New: Start image recognition
+  Future<void> _startImageRecognition(BuildContext context) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera); // Use camera for capture
+    if (pickedFile != null && context.mounted) {
+      await context.read<ProductProvider>().fetchFromImage(File(pickedFile.path));
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const RecommendationsScreen(isFromBudget: true)), // Show as budget recommendations
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,6 +127,18 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text('Get budget recommendations', style: GoogleFonts.roboto(fontSize: 14, color: Colors.grey)),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.camera_alt),
+              label: const Text('Capture Image'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => _startImageRecognition(context),
+            ),
+            const SizedBox(height: 8),
+            Text('to get product details via image', style: GoogleFonts.roboto(fontSize: 14, color: Colors.grey)),
           ],
         ),
       ),
